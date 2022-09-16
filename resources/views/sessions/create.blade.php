@@ -14,7 +14,13 @@
             <h4 class="register">
                 New User? 
                 <a href="/register" class="text-blue-700"> Register</a>
-            </h4>
+            </h4><br>
+            <a href="/auth/github/redirect" class=" border p-2 mr-2 bg-gray-400 rounded-l">sign in using Github</a>
+            <a href="/auth/google/redirect" class=" border p-2  bg-gray-400 rounded-l">sign in using Google</a>
+            <div class="mt-2">
+                <x-flash />    
+            </div>
+            
 
 
         

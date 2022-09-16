@@ -9,8 +9,10 @@ use App\Models\Category;
 use Illuminate\Support\Facades\File;
 use App\Models\Post;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Spatie\YamlFrontMatter\YamlFrontMatter;
 use Illuminate\Support\Facades\Route;
+use Laravel\Socialite\Facades\Socialite;
 use League\CommonMark\Extension\FrontMatter\Data\LibYamlFrontMatterParser;
 
 /*
@@ -23,6 +25,58 @@ use League\CommonMark\Extension\FrontMatter\Data\LibYamlFrontMatterParser;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::get('/auth/{provider}/redirect', function ($provider) {
+    return Socialite::driver($provider)->redirect();
+});
+
+Route::get('/auth/{provider}/callback', function ($provider) {
+    try {
+        $socialiteUser = Socialite::driver($provider)->user();
+    } catch (\Exception $e) {
+        return redirect('/login');
+    }
+
+    $user = \App\Models\User::where([
+        'provider' => $provider,
+        'provider_id' => $socialiteUser->getId()
+    ])->first();
+
+
+
+    if (!$user) {
+
+        // 3mlna hak 3ashan 2za 3aml registration ww rj3 3ml login mn github acc bnafs ll account
+        $validator = \Illuminate\Support\Facades\Validator::make(
+            ['email' => $socialiteUser->getEmail()],
+            ['email' => ['unique:users,email']],
+            ['email.unique' => 'Couldn\'t log in. Maybe you used a different login method?']
+        );
+
+        if($validator->fails()) {
+            return redirect('/login')->with('success', 'Maybe you used a different login method?');
+        }
+
+
+        $user = \App\Models\User::create([
+            'name' => $socialiteUser->getName(),
+            'username' => $socialiteUser->getName(),
+            'email' => $socialiteUser->getEmail(),
+            'provider' => $provider,
+            'provider_id' => $socialiteUser->getId(),
+            'email_verified_at' => now()
+        ]);
+    }
+    Auth::login($user);
+    return redirect('/');
+
+    ddd($socialiteUser->getName(), $socialiteUser->getEmail(), $socialiteUser->getId());
+
+    // $user->token
+});
+
+
+
 Route::get('/', [PostController::class, 'index'])->name('home');
 
 Route::get('login', [SessionsController::class, 'create'])->middleware('guest');

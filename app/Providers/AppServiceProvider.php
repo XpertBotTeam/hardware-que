@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
         //   dd (Gate:: allows ('admin'));
 
           Gate::define('admin', function(User $user) {
-              return $user->username == 'abdallahal';
+              return $user->email == 'fafafavd@gmail.com';
           });
   
           // we made a blade component named admin 
